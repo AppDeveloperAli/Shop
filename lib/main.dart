@@ -203,6 +203,7 @@ class _HomePageState extends State<HomePage> {
                             fontWeight: FontWeight.bold,
                             color: Colors.red),
                       ),
+                      Text('data'),
                       Text(
                         ' :     $khairpur     : ',
                         style: TextStyle(
