@@ -3,51 +3,8 @@ import 'package:baboo_and_co/details.dart';
 import 'package:flutter/material.dart';
 
 class MyAppDesigns {
-  static title() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      width: double.infinity,
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 150,
-            child: Text(
-              'Party Name',
-              style: TextStyle(
-                  fontWeight: FontWeight.bold, color: Colors.transparent),
-            ),
-          ),
-          Text(
-            ':',
-            style: TextStyle(color: Colors.transparent),
-          ),
-          Text(
-            'BNDHI',
-            style: TextStyle(fontSize: 17, color: Colors.red),
-          ),
-          Text(':'),
-          Text(
-            'KHRP',
-            style: TextStyle(fontSize: 17, color: Colors.red),
-          ),
-          Text(':'),
-          Text(
-            'RNPR',
-            style: TextStyle(fontSize: 17, color: Colors.red),
-          ),
-          Text(':'),
-          Text(
-            'SKRD',
-            style: TextStyle(fontSize: 17, color: Colors.red),
-          )
-        ],
-      ),
-    );
-  }
-
-  static order(
-      String dealer, bandhi, sakrand, khairpur, ranipur, BuildContext context) {
+  static title(String date, dealer, tons, dueRate, mill, bool isSold,
+      BuildContext context) {
     return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         width: double.infinity,
@@ -70,11 +27,26 @@ class MyAppDesigns {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   SizedBox(
-                    width: 150,
+                    width: 40,
+                    child: Center(
+                      child: Text(
+                        date,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: isSold ? Colors.red : Colors.amber),
+                      ),
+                    ),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 130,
                     child: Text(
-                      dealer,
-                      style: const TextStyle(
-                          fontWeight: FontWeight.bold, color: Colors.black),
+                      ' $dealer',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: isSold ? Colors.red : Colors.amber),
                     ),
                   ),
                   const Text(':'),
@@ -82,21 +54,89 @@ class MyAppDesigns {
                     width: 40,
                     child: Center(
                       child: Text(
-                        bandhi,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        tons,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.amber),
                       ),
                     ),
                   ),
                   const Text(':'),
                   SizedBox(
+                    width: 100,
+                    child: Center(
+                      child: Text(
+                        dueRate,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.amber),
+                      ),
+                    ),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 60,
+                    child: Center(
+                      child: Text(
+                        mill,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.amber),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ));
+  }
+
+  static order(String date, dealer, tons, dueRate, mill, bool isSold,
+      BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        width: double.infinity,
+        child: Column(
+          children: [
+            const Divider(
+              color: Colors.black12,
+            ),
+            InkWell(
+              onTap: () {
+                MyAppComponents.goToPage(
+                    context: context,
+                    navigateTo: DetailsScreen(
+                      title: '$dealer Details',
+                      isCustomer: true,
+                      isShop: false,
+                    ));
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
                     width: 40,
                     child: Center(
                       child: Text(
-                        khairpur,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        date,
+                        style:
+                            TextStyle(color: isSold ? Colors.red : Colors.blue),
                       ),
+                    ),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 130,
+                    child: Text(
+                      ' $dealer',
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                          color: isSold ? Colors.red : Colors.blue),
                     ),
                   ),
                   const Text(':'),
@@ -104,20 +144,37 @@ class MyAppDesigns {
                     width: 40,
                     child: Center(
                       child: Text(
-                        ranipur,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        tons,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.blue),
                       ),
                     ),
                   ),
                   const Text(':'),
                   SizedBox(
-                    width: 40,
+                    width: 100,
                     child: Center(
                       child: Text(
-                        sakrand,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
+                        dueRate,
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.blue),
+                      ),
+                    ),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 60,
+                    child: Center(
+                      child: Text(
+                        mill,
+                        style: TextStyle(
+                            // fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.red : Colors.blue),
                       ),
                     ),
                   ),

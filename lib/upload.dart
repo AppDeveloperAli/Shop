@@ -1,18 +1,14 @@
-// ignore_for_file: constant_identifier_names, use_build_context_synchronously
-
+import 'package:baboo_and_co/Components/functions.dart';
 import 'package:baboo_and_co/Widgets/TextField.dart';
 import 'package:baboo_and_co/Widgets/snackBar.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:uuid/uuid.dart';
 
-class PurchaseScreen extends StatefulWidget {
+class Upload extends StatefulWidget {
   String title;
-  PurchaseScreen({super.key, required this.title});
+  Upload({super.key, required this.title});
 
   @override
-  State<PurchaseScreen> createState() => _PurchaseScreenState();
+  State<Upload> createState() => _PurchaseScreenState();
 }
 
 enum MillType {
@@ -29,25 +25,13 @@ enum MillType {
 
 enum Warehouse { Shop, Mill }
 
-class _PurchaseScreenState extends State<PurchaseScreen> {
+class _PurchaseScreenState extends State<Upload> {
   TextEditingController customerController = TextEditingController();
   TextEditingController tonsController = TextEditingController();
   TextEditingController duePriceController = TextEditingController();
   MillType? millType;
   Warehouse? shopType;
-
-  String getCurrentTimeFormatted() {
-    DateTime now = DateTime.now();
-    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-    String formattedTime = formatter.format(now);
-    return formattedTime;
-  }
-
-  String generateUniqueId() {
-    var uuid = const Uuid();
-    String id = uuid.v4();
-    return id;
-  }
+  bool isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -176,6 +160,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                                 controller: tonsController,
                                 labelText: 'Tons',
                                 keyboardType: TextInputType.number,
+                                allowOnlyNumericInput: true,
                               ),
                             ),
                           ),
@@ -183,6 +168,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                             child: MyTextInputText(
                               controller: duePriceController,
                               labelText: 'Due Price',
+                              allowOnlyNumericInput: true,
                               keyboardType: TextInputType.number,
                             ),
                           ),
@@ -367,69 +353,91 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () async {
-                        // placeOrder();
-
-                        String millName = millType.toString().split('.').last;
-                        String collectionName =
-                            shopType == Warehouse.Shop ? 'Shop' : 'Mill';
-                        if (tonsController.text.isNotEmpty &&
-                            customerController.text.isNotEmpty &&
-                            duePriceController.text.isNotEmpty) {
-                          try {
-                            await FirebaseFirestore.instance
-                                .collection(collectionName)
-                                .doc(millName)
-                                .set({
-                              'dealer_name': customerController.text,
-                              'tons': tonsController.text,
-                              'due_price': duePriceController.text,
-                              'orderType': widget.title,
-                              'dateTime': getCurrentTimeFormatted(),
-                              'orderID': generateUniqueId()
-                            });
-                            CustomSnackBar(context,
-                                const Text('Order placed successfully!'));
-                          } catch (e) {
-                            CustomSnackBar(
-                                context, Text('Error placing order: $e'));
-                          }
-                        } else {
-                          CustomSnackBar(
-                              context,
-                              const Text(
-                                  'Please Make sure you put all your informations.'));
-                        }
-                      },
-                      child: Card(
-                        color: Colors.blue,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20.0),
-                        ),
-                        elevation: 5,
-                        margin: const EdgeInsets.all(10),
-                        child: const Padding(
-                          padding: EdgeInsets.all(10),
-                          child: Center(
-                            child: Text(
-                              'Place an Order',
-                              style:
-                                  TextStyle(color: Colors.white, fontSize: 20),
+            isLoading
+                ? const CircularProgressIndicator()
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () async {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              String millName =
+                                  millType.toString().split('.').last;
+                              String collectionName =
+                                  shopType == Warehouse.Shop ? 'Shop' : 'Mill';
+                              if (tonsController.text.isNotEmpty &&
+                                  customerController.text.isNotEmpty &&
+                                  duePriceController.text.isNotEmpty) {
+                                if (widget.title == "Purchasing") {
+                                  if (millType != null && shopType != null) {
+                                    await MyAppComponents.buyItem(
+                                        context,
+                                        collectionName,
+                                        millName,
+                                        widget.title,
+                                        tonsController,
+                                        customerController,
+                                        duePriceController);
+                                  } else {
+                                    CustomSnackBar(
+                                        context,
+                                        const Text(
+                                            'You didn\'t select any Mill or Warehouse..'));
+                                  }
+                                } else if (widget.title == "Selling") {
+                                  if (millType != null && shopType != null) {
+                                    await MyAppComponents.sellItem(
+                                        context,
+                                        collectionName,
+                                        millName,
+                                        widget.title,
+                                        tonsController,
+                                        customerController,
+                                        duePriceController);
+                                  } else {
+                                    CustomSnackBar(
+                                        context,
+                                        const Text(
+                                            'You didn\'t select any Mill or Warehouse..'));
+                                  }
+                                }
+                              } else {
+                                CustomSnackBar(
+                                    context,
+                                    const Text(
+                                        'Please Make sure you put all your informations.'));
+                              }
+                              setState(() {
+                                isLoading = false;
+                              });
+                            },
+                            child: Card(
+                              color: Colors.blue,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              elevation: 5,
+                              margin: const EdgeInsets.all(10),
+                              child: const Padding(
+                                padding: EdgeInsets.all(10),
+                                child: Center(
+                                  child: Text(
+                                    'Place an Order',
+                                    style: TextStyle(
+                                        color: Colors.white, fontSize: 20),
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
           ],
         ),
       )),
