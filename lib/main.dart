@@ -3,12 +3,17 @@
 import 'package:baboo_and_co/Components/designs.dart';
 import 'package:baboo_and_co/Components/functions.dart';
 import 'package:baboo_and_co/details.dart';
-import 'package:baboo_and_co/purchase.dart';
-import 'package:baboo_and_co/store.dart';
+import 'package:baboo_and_co/firebase_options.dart';
+import 'package:baboo_and_co/upload.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 

@@ -17,6 +17,7 @@ class _MyTextInputTextState extends State<MyTextInputText> {
   Widget build(BuildContext context) {
     return TextFormField(
       keyboardType: widget.keyboardType,
+      controller: widget.controller,
       decoration: InputDecoration(
         labelText: widget.labelText,
         border: const OutlineInputBorder(),

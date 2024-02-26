@@ -63,7 +63,7 @@ class MyAppDesigns {
                     navigateTo: DetailsScreen(
                       title: '$dealer Details',
                       isCustomer: true,
-                      isShop: true,
+                      isShop: false,
                     ));
               },
               child: Row(
@@ -206,83 +206,7 @@ class MyAppDesigns {
         ));
   }
 
-  static detailsTitle() {
-    return Row(
-      children: [
-        const Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              'Date',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        const Expanded(
-          flex: 3,
-          child: Center(
-            child: Text(
-              'Mill',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        const Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              'Tons',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        const Expanded(
-          flex: 2,
-          child: Center(
-            child: Text(
-              'Due Rate',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        const Expanded(
-          flex: 2,
-          child: Center(
-            child: Text(
-              'Total',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  static storeDetailsTitle(String customer, rate, bags) {
+  static detailsTitle(bool isShop) {
     return Row(
       children: [
         const Expanded(
@@ -304,8 +228,8 @@ class MyAppDesigns {
           flex: 3,
           child: Center(
             child: Text(
-              customer,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              isShop ? 'Customer' : 'Mill',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -319,8 +243,8 @@ class MyAppDesigns {
           flex: 1,
           child: Center(
             child: Text(
-              bags,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              isShop ? 'Bags' : 'Tons',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -334,8 +258,8 @@ class MyAppDesigns {
           flex: 2,
           child: Center(
             child: Text(
-              rate,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+              isShop ? 'Rate' : 'Due Rate',
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
         ),
@@ -359,86 +283,95 @@ class MyAppDesigns {
   }
 
   static detailsOrder(String date, mill, tons, due, total, bool isSold) {
-    return Row(
+    return Column(
       children: [
-        Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              date,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isSold ? Colors.blue : Colors.red),
+        Row(
+          children: [
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: Text(
+                  date,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSold ? Colors.blue : Colors.red),
+                ),
+              ),
             ),
-          ),
+            Container(
+              width: 1,
+              height: 50,
+              color: Colors.black,
+              child: const SizedBox(child: Text('')),
+            ),
+            Expanded(
+              flex: 3,
+              child: Center(
+                child: Text(
+                  mill,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSold ? Colors.blue : Colors.red),
+                ),
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 50,
+              color: Colors.black,
+              child: const SizedBox(child: Text('')),
+            ),
+            Expanded(
+              flex: 1,
+              child: Center(
+                child: Text(
+                  tons,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSold ? Colors.blue : Colors.red),
+                ),
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 50,
+              color: Colors.black,
+              child: const SizedBox(child: Text('')),
+            ),
+            Expanded(
+              flex: 2,
+              child: Center(
+                child: Text(
+                  due,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSold ? Colors.blue : Colors.red),
+                ),
+              ),
+            ),
+            Container(
+              width: 1,
+              height: 50,
+              color: Colors.black,
+              child: const SizedBox(child: Text('')),
+            ),
+            Expanded(
+              flex: 2,
+              child: Center(
+                child: Text(
+                  total,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSold ? Colors.blue : Colors.red),
+                ),
+              ),
+            ),
+          ],
         ),
-        Container(
-          width: 1,
-          height: 50,
+        Divider(
+          height: 0,
+          thickness: 1,
           color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        Expanded(
-          flex: 3,
-          child: Center(
-            child: Text(
-              mill,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isSold ? Colors.blue : Colors.red),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        Expanded(
-          flex: 1,
-          child: Center(
-            child: Text(
-              tons,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isSold ? Colors.blue : Colors.red),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: Text(
-              due,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isSold ? Colors.blue : Colors.red),
-            ),
-          ),
-        ),
-        Container(
-          width: 1,
-          height: 50,
-          color: Colors.black,
-          child: const SizedBox(child: Text('')),
-        ),
-        Expanded(
-          flex: 2,
-          child: Center(
-            child: Text(
-              total,
-              style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: isSold ? Colors.blue : Colors.red),
-            ),
-          ),
         ),
       ],
     );

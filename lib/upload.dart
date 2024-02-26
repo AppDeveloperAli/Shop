@@ -1,5 +1,11 @@
+// ignore_for_file: constant_identifier_names, use_build_context_synchronously
+
 import 'package:baboo_and_co/Widgets/TextField.dart';
+import 'package:baboo_and_co/Widgets/snackBar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:uuid/uuid.dart';
 
 class PurchaseScreen extends StatefulWidget {
   String title;
@@ -25,8 +31,24 @@ enum Warehouse { Shop, Mill }
 
 class _PurchaseScreenState extends State<PurchaseScreen> {
   TextEditingController customerController = TextEditingController();
+  TextEditingController tonsController = TextEditingController();
+  TextEditingController duePriceController = TextEditingController();
   MillType? millType;
   Warehouse? shopType;
+
+  String getCurrentTimeFormatted() {
+    DateTime now = DateTime.now();
+    DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    String formattedTime = formatter.format(now);
+    return formattedTime;
+  }
+
+  String generateUniqueId() {
+    var uuid = const Uuid();
+    String id = uuid.v4();
+    return id;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -151,7 +173,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                             child: Padding(
                               padding: const EdgeInsets.only(right: 10),
                               child: MyTextInputText(
-                                controller: customerController,
+                                controller: tonsController,
                                 labelText: 'Tons',
                                 keyboardType: TextInputType.number,
                               ),
@@ -159,7 +181,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                           ),
                           Expanded(
                             child: MyTextInputText(
-                              controller: customerController,
+                              controller: duePriceController,
                               labelText: 'Due Price',
                               keyboardType: TextInputType.number,
                             ),
@@ -167,9 +189,9 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                         ],
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 20),
-                      child: const Text(
+                    const Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Text(
                         '-- Sugar Mills --',
                         style: TextStyle(fontSize: 20),
                       ),
@@ -303,10 +325,10 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                         ),
                       ],
                     ),
-                    Divider(),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: const Text(
+                    const Divider(),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Text(
                         '-- Warehouse --',
                         style: TextStyle(fontSize: 20),
                       ),
@@ -350,9 +372,40 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pop(context);
+                    child: GestureDetector(
+                      onTap: () async {
+                        // placeOrder();
+
+                        String millName = millType.toString().split('.').last;
+                        String collectionName =
+                            shopType == Warehouse.Shop ? 'Shop' : 'Mill';
+                        if (tonsController.text.isNotEmpty &&
+                            customerController.text.isNotEmpty &&
+                            duePriceController.text.isNotEmpty) {
+                          try {
+                            await FirebaseFirestore.instance
+                                .collection(collectionName)
+                                .doc(millName)
+                                .set({
+                              'dealer_name': customerController.text,
+                              'tons': tonsController.text,
+                              'due_price': duePriceController.text,
+                              'orderType': widget.title,
+                              'dateTime': getCurrentTimeFormatted(),
+                              'orderID': generateUniqueId()
+                            });
+                            CustomSnackBar(context,
+                                const Text('Order placed successfully!'));
+                          } catch (e) {
+                            CustomSnackBar(
+                                context, Text('Error placing order: $e'));
+                          }
+                        } else {
+                          CustomSnackBar(
+                              context,
+                              const Text(
+                                  'Please Make sure you put all your informations.'));
+                        }
                       },
                       child: Card(
                         color: Colors.blue,
