@@ -113,32 +113,50 @@ class MyAppComponents {
         .get()
         .then((DocumentSnapshot docSnapshot) {
       if (docSnapshot.exists) {
-        // Document exists, update it
-        docSnapshot.reference.update({
-          'totalTons': FieldValue.increment(tonsToSubtract),
-          'millType': millName,
-          'orders': FieldValue.arrayUnion([
-            {
-              'dealer_name': customerController.text,
-              'tons': tonsController.text,
-              'due_price': duePriceController.text,
-              'millType': millName,
-              'orderType': title,
-              'dateTime': getCurrentTimeFormatted(),
-              'orderID': generateUniqueId(),
-            }
-          ]),
-        }).then((value) {
-          CustomSnackBar(context, const Text('Order updated successfully!'));
-          Navigator.pop(context);
-        }).catchError((error) {
-          CustomSnackBar(context, Text('Failed to update document: $error'));
-        });
+        int currentValue =
+            (docSnapshot.data() as Map<String, dynamic>)['totalTons'];
+        int tonsToAdd = int.parse(tonsController.text);
+
+        if (currentValue >= tonsToAdd) {
+          // Proceed with decrementing the value and updating the document
+          int tonsToSubtract = -tonsToAdd;
+
+          docSnapshot.reference.update({
+            'totalTons': FieldValue.increment(tonsToSubtract),
+            'millType': millName,
+            'orders': FieldValue.arrayUnion([
+              {
+                'dealer_name': customerController.text,
+                'tons': tonsController.text,
+                'due_price': duePriceController.text,
+                'millType': millName,
+                'orderType': title,
+                'dateTime': getCurrentTimeFormatted(),
+                'orderID': generateUniqueId(),
+              }
+            ]),
+          }).then((value) {
+            CustomSnackBar(context, const Text('Order updated successfully!'));
+            Navigator.pop(context);
+          }).catchError((error) {
+            CustomSnackBar(context, Text('Failed to update document: $error'));
+          });
+        } else {
+          // Display error message if the current value is less than what the user wants to subtract
+          CustomSnackBar(
+              context,
+              const Text(
+                  'You don\'t have enough tons in the selected warehouse.'));
+        }
       } else {
-        // Document doesn't exist, create it
-        CustomSnackBar(context,
-            const Text('You didn\'t purchased any Ton\'s from this Mill.'));
+        // Document doesn't exist, handle accordingly
+        CustomSnackBar(
+            context,
+            const Text(
+                'You didn\'t have enough tons in the selected warehouse.'));
       }
+    }).catchError((error) {
+      CustomSnackBar(context, Text('Failed to get document: $error'));
     }).catchError((error) {
       CustomSnackBar(context, Text('Failed to get document: $error'));
     });

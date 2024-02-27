@@ -55,10 +55,14 @@ class _HomePageState extends State<HomePage> {
       desc: "What do you want ?",
       buttons: [
         DialogButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
             MyAppComponents.goToPage(
-                context: context, navigateTo: Upload(title: 'Selling'));
+                context: context,
+                navigateTo: Upload(
+                  title: 'Selling',
+                  gridData: await fetchDataFromFirestore(),
+                ));
           },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(191, 116, 116, 1),
@@ -70,10 +74,14 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         DialogButton(
-          onPressed: () {
+          onPressed: () async {
             Navigator.pop(context);
             MyAppComponents.goToPage(
-                context: context, navigateTo: Upload(title: 'Purchasing'));
+                context: context,
+                navigateTo: Upload(
+                  title: 'Purchasing',
+                  gridData: await fetchDataFromFirestore(),
+                ));
           },
           gradient: LinearGradient(colors: [
             Color.fromRGBO(116, 116, 191, 1.0),
@@ -88,18 +96,49 @@ class _HomePageState extends State<HomePage> {
     ).show();
   }
 
+  Future<List<Map<String, dynamic>>> fetchDataFromFirestore() async {
+    Map<String, num> data = {};
+
+    QuerySnapshot millQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Mill').get();
+
+    QuerySnapshot shopQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Shop').get();
+
+    for (var doc in millQuerySnapshot.docs) {
+      String millType = doc['millType'];
+      num totalTons = doc['totalTons'];
+      data[millType] = (data[millType] ?? 0) + totalTons;
+    }
+
+    for (var doc in shopQuerySnapshot.docs) {
+      String millType = doc['millType'];
+      num totalTons = doc['totalTons'];
+      data[millType] = (data[millType] ?? 0) + totalTons;
+    }
+
+    List<Map<String, dynamic>> result = [];
+    data.forEach((millType, totalTons) {
+      result.add({
+        'millType': millType,
+        'totalTons': totalTons,
+      });
+    });
+
+    return result;
+  }
+
   String getFormattedDate(String dateTimeString) {
-    // Parse the date string into a DateTime object
     DateTime dateTime = DateTime.parse(dateTimeString);
-
-    // Format the DateTime object to display only the month and day
     String formattedDateTime = DateFormat('dd-MM').format(dateTime);
-
-    // Return the formatted date string
     return formattedDateTime;
   }
 
+  StreamSubscription<QuerySnapshot>? _subscription;
+  StreamSubscription<QuerySnapshot>? _subscriptionShop;
+
   num totalOrders = 0;
+  num totalOrdersShop = 0;
 
   void _subscribeToOrders() {
     _subscription = FirebaseFirestore.instance
@@ -118,18 +157,35 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  StreamSubscription<QuerySnapshot>? _subscription;
+  void _subscribeToOrdersShop() {
+    _subscriptionShop = FirebaseFirestore.instance
+        .collection('Shop')
+        .snapshots()
+        .listen((snapshot) {
+      num total = 0;
+
+      for (var doc in snapshot.docs) {
+        total += doc['totalTons'] ?? 0;
+      }
+
+      setState(() {
+        totalOrdersShop = total;
+      });
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     _subscribeToOrders();
+    _subscribeToOrdersShop();
   }
 
   @override
   void dispose() {
     super.dispose();
     _subscription?.cancel();
+    _subscriptionShop?.cancel();
   }
 
   @override
@@ -161,6 +217,11 @@ class _HomePageState extends State<HomePage> {
                 // totalOrders += totalTons;
                 allOrders.addAll(orders);
               }
+              allOrders.sort((a, b) {
+                final dateTimeA = DateTime.parse(a['dateTime']);
+                final dateTimeB = DateTime.parse(b['dateTime']);
+                return dateTimeB.compareTo(dateTimeA);
+              });
 
               return SingleChildScrollView(
                 child: Column(
@@ -225,7 +286,7 @@ class _HomePageState extends State<HomePage> {
                               child: Row(
                                 children: [
                                   Text(
-                                    '37',
+                                    totalOrdersShop.toString(),
                                     style: TextStyle(
                                         color: Colors.green,
                                         fontSize: 50,
@@ -291,24 +352,50 @@ class _HomePageState extends State<HomePage> {
                     ),
                     MyAppDesigns.title('Date', 'Dealer', 'Tons', 'Due Rate',
                         'Mill', false, context),
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemCount: allOrders.length,
-                      itemBuilder: (context, index) {
-                        return MyAppDesigns.order(
-                            // allOrders[index]['dateTime'],
-                            getFormattedDate(allOrders[index]['dateTime']),
-                            allOrders[index]['dealer_name'],
-                            allOrders[index]['tons'],
-                            allOrders[index]['due_price'],
-                            allOrders[index]['millType'],
-                            allOrders[index]['orderType'] == 'Purchasing'
-                                ? true
-                                : false,
-                            context);
-                      },
-                    ),
+                    StreamBuilder(
+                        stream: FirebaseFirestore.instance
+                            .collection('Shop')
+                            .snapshots(),
+                        builder: (context, snapshot) {
+                          if (!snapshot.hasData) {
+                            return Center(
+                              child: CircularProgressIndicator(),
+                            );
+                          } else {
+                            List<dynamic> allOrdersShop = [];
+                            for (var doc in snapshot.data!.docs) {
+                              List<dynamic> orders = doc['orders'];
+                              allOrdersShop.addAll(orders);
+                            }
+
+                            allOrdersShop.sort((a, b) {
+                              final dateTimeA = DateTime.parse(a['dateTime']);
+                              final dateTimeB = DateTime.parse(b['dateTime']);
+                              return dateTimeB.compareTo(dateTimeA);
+                            });
+
+                            return ListView.builder(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemCount: allOrdersShop.length,
+                              itemBuilder: (context, index) {
+                                return MyAppDesigns.order(
+                                  getFormattedDate(
+                                      allOrdersShop[index]['dateTime']),
+                                  allOrdersShop[index]['dealer_name'],
+                                  allOrdersShop[index]['tons'],
+                                  allOrdersShop[index]['due_price'],
+                                  allOrdersShop[index]['millType'],
+                                  allOrdersShop[index]['orderType'] ==
+                                          'Purchasing'
+                                      ? true
+                                      : false,
+                                  context,
+                                );
+                              },
+                            );
+                          }
+                        }),
                   ],
                 ),
               );

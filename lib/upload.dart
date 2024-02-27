@@ -4,8 +4,10 @@ import 'package:baboo_and_co/Widgets/snackBar.dart';
 import 'package:flutter/material.dart';
 
 class Upload extends StatefulWidget {
-  String title;
-  Upload({super.key, required this.title});
+  final String title;
+  final List<Map<String, dynamic>> gridData;
+
+  Upload({required this.title, required this.gridData});
 
   @override
   State<Upload> createState() => _PurchaseScreenState();
@@ -52,91 +54,29 @@ class _PurchaseScreenState extends State<Upload> {
                       '-- Available Tons --',
                       style: TextStyle(fontSize: 20),
                     ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            'Ranipur\n124',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                    GridView.count(
+                      crossAxisCount: 5,
+                      shrinkWrap: true,
+                      crossAxisSpacing: 10,
+                      children: widget.gridData.map((data) {
+                        return Visibility(
+                          visible: data['totalTons'] > 0,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  '${data['millType']}\n${data['totalTons']}',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Text(
-                            'Khairpur\n421',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Bandhi\n654',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Sakrand\n231',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Alnoor\n231',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.only(top: 10),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
-                        children: [
-                          Text(
-                            'Sakrand\n124',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Deharki\n421',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Ghotki\n654',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Alliance\n231',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          Text(
-                            'Kiran\n231',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
+                        );
+                      }).toList(),
                     ),
                     const Padding(
                       padding: EdgeInsets.only(top: 10),

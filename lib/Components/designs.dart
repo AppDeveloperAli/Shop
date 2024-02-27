@@ -18,7 +18,7 @@ class MyAppDesigns {
                 MyAppComponents.goToPage(
                     context: context,
                     navigateTo: DetailsScreen(
-                      title: '$dealer Details',
+                      title: dealer,
                       isCustomer: true,
                       isShop: false,
                     ));
@@ -110,7 +110,7 @@ class MyAppDesigns {
                 MyAppComponents.goToPage(
                     context: context,
                     navigateTo: DetailsScreen(
-                      title: '$dealer Details',
+                      title: dealer,
                       isCustomer: true,
                       isShop: false,
                     ));
@@ -133,6 +133,8 @@ class MyAppDesigns {
                     width: 130,
                     child: Text(
                       ' $dealer',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
