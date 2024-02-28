@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
     for (var doc in millQuerySnapshot.docs) {
       String millType = doc['millType'];
-      num totalTons = num.parse(doc['totalTons']);
+      num totalTons = doc['totalTons'];
       data[millType] = (data[millType] ?? 0) + totalTons;
     }
 
