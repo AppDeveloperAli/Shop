@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> {
 
     for (var doc in millQuerySnapshot.docs) {
       String millType = doc['millType'];
-      num totalTons = doc['totalTons'];
+      num totalTons = num.parse(doc['totalTons']);
       data[millType] = (data[millType] ?? 0) + totalTons;
     }
 
@@ -230,37 +230,20 @@ class _HomePageState extends State<HomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        Column(
+                        Row(
                           children: [
-                            InkWell(
-                              onTap: () {
-                                // MyAppComponents.goToPage(
-                                //     context: context,
-                                //     navigateTo: DetailsScreen(
-                                //       title: 'Mills Details',
-                                //       isShop: false,
-                                //       isCustomer: true,
-                                //     ));
-                              },
-                              child: Row(
-                                children: [
-                                  Text(
-                                    totalOrders.toString(),
-                                    style: TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w900),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.only(top: 20, left: 5),
-                                    child: Text(
-                                      'Tons Mills',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                ],
+                            Text(
+                              totalOrders.toString(),
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.w900),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20, left: 5),
+                              child: Text(
+                                'Tons Mills',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             )
                           ],
@@ -271,37 +254,20 @@ class _HomePageState extends State<HomePage> {
                           color: Colors.amber,
                           child: SizedBox(child: Text('')),
                         ),
-                        Column(
+                        Row(
                           children: [
-                            InkWell(
-                              onTap: () {
-                                // MyAppComponents.goToPage(
-                                //     context: context,
-                                //     navigateTo: DetailsScreen(
-                                //       title: 'Shop Details',
-                                //       isShop: true,
-                                //       isCustomer: false,
-                                //     ));
-                              },
-                              child: Row(
-                                children: [
-                                  Text(
-                                    totalOrdersShop.toString(),
-                                    style: TextStyle(
-                                        color: Colors.green,
-                                        fontSize: 50,
-                                        fontWeight: FontWeight.w900),
-                                  ),
-                                  Padding(
-                                    padding:
-                                        const EdgeInsets.only(top: 20, left: 5),
-                                    child: Text(
-                                      'Tons Shop',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  )
-                                ],
+                            Text(
+                              totalOrdersShop.toString(),
+                              style: TextStyle(
+                                  color: Colors.green,
+                                  fontSize: 50,
+                                  fontWeight: FontWeight.w900),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 20, left: 5),
+                              child: Text(
+                                'Tons Shop',
+                                style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             )
                           ],
@@ -337,7 +303,8 @@ class _HomePageState extends State<HomePage> {
                                 ? true
                                 : false,
                             context,
-                            allOrders);
+                            allOrders,
+                            false);
                       },
                     ),
                     const Divider(
@@ -392,7 +359,8 @@ class _HomePageState extends State<HomePage> {
                                         ? true
                                         : false,
                                     context,
-                                    allOrdersShop);
+                                    allOrdersShop,
+                                    true);
                               },
                             );
                           }

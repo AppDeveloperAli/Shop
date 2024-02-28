@@ -96,7 +96,7 @@ class MyAppDesigns {
   }
 
   static order(String date, dealer, tons, dueRate, mill, bool isSold,
-      BuildContext context, List<dynamic> data) {
+      BuildContext context, List<dynamic> data, bool isShop) {
     return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         width: double.infinity,
@@ -112,7 +112,7 @@ class MyAppDesigns {
                     navigateTo: DetailsScreen(
                       title: dealer,
                       isCustomer: true,
-                      isShop: false,
+                      isShop: isShop,
                       data: data,
                     ));
               },
