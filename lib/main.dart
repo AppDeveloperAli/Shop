@@ -234,13 +234,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             InkWell(
                               onTap: () {
-                                MyAppComponents.goToPage(
-                                    context: context,
-                                    navigateTo: DetailsScreen(
-                                      title: 'Mills Details',
-                                      isShop: false,
-                                      isCustomer: true,
-                                    ));
+                                // MyAppComponents.goToPage(
+                                //     context: context,
+                                //     navigateTo: DetailsScreen(
+                                //       title: 'Mills Details',
+                                //       isShop: false,
+                                //       isCustomer: true,
+                                //     ));
                               },
                               child: Row(
                                 children: [
@@ -275,13 +275,13 @@ class _HomePageState extends State<HomePage> {
                           children: [
                             InkWell(
                               onTap: () {
-                                MyAppComponents.goToPage(
-                                    context: context,
-                                    navigateTo: DetailsScreen(
-                                      title: 'Shop Details',
-                                      isShop: true,
-                                      isCustomer: false,
-                                    ));
+                                // MyAppComponents.goToPage(
+                                //     context: context,
+                                //     navigateTo: DetailsScreen(
+                                //       title: 'Shop Details',
+                                //       isShop: true,
+                                //       isCustomer: false,
+                                //     ));
                               },
                               child: Row(
                                 children: [
@@ -336,7 +336,8 @@ class _HomePageState extends State<HomePage> {
                             allOrders[index]['orderType'] == 'Purchasing'
                                 ? true
                                 : false,
-                            context);
+                            context,
+                            allOrders);
                       },
                     ),
                     const Divider(
@@ -380,18 +381,18 @@ class _HomePageState extends State<HomePage> {
                               itemCount: allOrdersShop.length,
                               itemBuilder: (context, index) {
                                 return MyAppDesigns.order(
-                                  getFormattedDate(
-                                      allOrdersShop[index]['dateTime']),
-                                  allOrdersShop[index]['dealer_name'],
-                                  allOrdersShop[index]['tons'],
-                                  allOrdersShop[index]['due_price'],
-                                  allOrdersShop[index]['millType'],
-                                  allOrdersShop[index]['orderType'] ==
-                                          'Purchasing'
-                                      ? true
-                                      : false,
-                                  context,
-                                );
+                                    getFormattedDate(
+                                        allOrdersShop[index]['dateTime']),
+                                    allOrdersShop[index]['dealer_name'],
+                                    allOrdersShop[index]['tons'],
+                                    allOrdersShop[index]['due_price'],
+                                    allOrdersShop[index]['millType'],
+                                    allOrdersShop[index]['orderType'] ==
+                                            'Purchasing'
+                                        ? true
+                                        : false,
+                                    context,
+                                    allOrdersShop);
                               },
                             );
                           }

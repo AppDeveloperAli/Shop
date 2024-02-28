@@ -15,13 +15,13 @@ class MyAppDesigns {
             ),
             InkWell(
               onTap: () {
-                MyAppComponents.goToPage(
-                    context: context,
-                    navigateTo: DetailsScreen(
-                      title: dealer,
-                      isCustomer: true,
-                      isShop: false,
-                    ));
+                // MyAppComponents.goToPage(
+                //     context: context,
+                //     navigateTo: DetailsScreen(
+                //       title: dealer,
+                //       isCustomer: true,
+                //       isShop: false,
+                //     ));
               },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -96,7 +96,7 @@ class MyAppDesigns {
   }
 
   static order(String date, dealer, tons, dueRate, mill, bool isSold,
-      BuildContext context) {
+      BuildContext context, List<dynamic> data) {
     return Container(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         width: double.infinity,
@@ -113,6 +113,7 @@ class MyAppDesigns {
                       title: dealer,
                       isCustomer: true,
                       isShop: false,
+                      data: data,
                     ));
               },
               child: Row(
@@ -332,7 +333,7 @@ class MyAppDesigns {
           flex: 2,
           child: Center(
             child: Text(
-              'Total',
+              'Mill',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
