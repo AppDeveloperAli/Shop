@@ -1,5 +1,7 @@
 import 'package:baboo_and_co/Components/functions.dart';
 import 'package:baboo_and_co/details.dart';
+import 'package:baboo_and_co/leadgerDetails.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class MyAppDesigns {
@@ -435,5 +437,133 @@ class MyAppDesigns {
         ),
       ],
     );
+  }
+
+  static ledgerTitle(String date, dealer, mill, tons, duerate, bool isSold,
+      BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        width: double.infinity,
+        child: Column(
+          children: [
+            const Divider(
+              color: Colors.black12,
+            ),
+            InkWell(
+              onTap: () {
+                MyAppComponents.goToPage(
+                    context: context, navigateTo: LeaderDetails());
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    width: 40,
+                    child: Text(date,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.blue : Colors.red)),
+                  ),
+                  const Text(' : '),
+                  SizedBox(
+                    width: 130,
+                    child: Text(dealer,
+                        style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            // fontSize: 18,
+                            color: isSold ? Colors.blue : Colors.red)),
+                  ),
+                  const Text(' : '),
+                  SizedBox(
+                    width: 60,
+                    child: Text(mill,
+                        style: TextStyle(
+                            // fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.blue : Colors.red)),
+                  ),
+                  const Text(' : '),
+                  SizedBox(
+                    width: 20,
+                    child: Text(tons,
+                        style: TextStyle(
+                            // fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.blue : Colors.red)),
+                  ),
+                  const Text(' : '),
+                  SizedBox(
+                    width: 40,
+                    child: Text(duerate,
+                        style: TextStyle(
+                            // fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: isSold ? Colors.blue : Colors.red)),
+                  ),
+                  const Text(' : '),
+                  Icon(
+                    isSold ? Icons.check : Icons.close,
+                    color: isSold ? Colors.blue : Colors.red,
+                  )
+                ],
+              ),
+            ),
+          ],
+        ));
+  }
+
+  static ledgerOrder(
+      String date, dealer, mill, bool isSold, BuildContext context) {
+    return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        width: double.infinity,
+        child: Column(
+          children: [
+            const Divider(
+              color: Colors.black12,
+            ),
+            InkWell(
+              onTap: () {
+                // MyAppComponents.goToPage(
+                //     context: context,
+                //     navigateTo: DetailsScreen(
+                //       title: dealer,
+                //       isCustomer: true,
+                //       isShop: false,
+                //     ));
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  SizedBox(
+                    width: 40,
+                    child: Center(
+                      child: Text(date,
+                          style: TextStyle(
+                              color: isSold ? Colors.amber : Colors.red)),
+                    ),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 100,
+                    child: Text(' $dealer',
+                        style: TextStyle(
+                            color: isSold ? Colors.amber : Colors.red)),
+                  ),
+                  const Text(':'),
+                  SizedBox(
+                    width: 100,
+                    child: Center(
+                      child: Text(mill,
+                          style: TextStyle(
+                              color: isSold ? Colors.amber : Colors.red)),
+                    ),
+                  ),
+                  Icon(isSold ? Icons.check : Icons.close)
+                ],
+              ),
+            ),
+          ],
+        ));
   }
 }

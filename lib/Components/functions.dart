@@ -14,6 +14,12 @@ class MyAppComponents {
     );
   }
 
+  static getFormattedDate(String dateTimeString) {
+    DateTime dateTime = DateTime.parse(dateTimeString);
+    String formattedDateTime = DateFormat('dd-MM').format(dateTime);
+    return formattedDateTime;
+  }
+
   static getCurrentTimeFormatted() {
     DateTime now = DateTime.now();
     DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
@@ -50,13 +56,18 @@ class MyAppComponents {
           'millType': millName,
           'orders': FieldValue.arrayUnion([
             {
-              'dealer_name': customerController.text,
+              'brokerName': customerController.text,
               'tons': tonsController.text,
               'due_price': duePriceController.text,
               'millType': millName,
               'orderType': title,
               'dateTime': getCurrentTimeFormatted(),
               'orderID': generateUniqueId(),
+              'isLoad': false,
+              'sellTo': 'Not Yet',
+              'sellPrice': '00',
+              'loadDate': '',
+              'brokerHaveTons': tonsController.text
             }
           ]),
         }).then((value) {
@@ -75,13 +86,18 @@ class MyAppComponents {
           'millType': millName,
           'orders': [
             {
-              'dealer_name': customerController.text,
+              'brokerName': customerController.text,
               'tons': tonsController.text,
               'due_price': duePriceController.text,
               'millType': millName,
               'orderType': title,
               'dateTime': getCurrentTimeFormatted(),
               'orderID': generateUniqueId(),
+              'isLoad': false,
+              'sellTo': 'Not Yet',
+              'sellPrice': 'Not Sold',
+              'loadDate': 'Not Yet',
+              'brokerHaveTons': tonsController.text
             }
           ],
         }).then((value) {

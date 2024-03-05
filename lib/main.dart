@@ -1,16 +1,18 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 
 import 'dart:async';
-
 import 'package:baboo_and_co/Components/designs.dart';
 import 'package:baboo_and_co/Components/functions.dart';
-import 'package:baboo_and_co/details.dart';
+import 'package:baboo_and_co/Widgets/snackBar.dart';
 import 'package:baboo_and_co/firebase_options.dart';
+import 'package:baboo_and_co/ledger.dart';
 import 'package:baboo_and_co/upload.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:liquid_pull_to_refresh/liquid_pull_to_refresh.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 
 void main() async {
@@ -96,6 +98,8 @@ class _HomePageState extends State<HomePage> {
     ).show();
   }
 
+  List<Map<String, dynamic>> gridData = [];
+
   Future<List<Map<String, dynamic>>> fetchDataFromFirestore() async {
     Map<String, num> data = {};
 
@@ -128,10 +132,57 @@ class _HomePageState extends State<HomePage> {
     return result;
   }
 
-  String getFormattedDate(String dateTimeString) {
-    DateTime dateTime = DateTime.parse(dateTimeString);
-    String formattedDateTime = DateFormat('dd-MM').format(dateTime);
-    return formattedDateTime;
+  List<Map<String, dynamic>> gridDataBroker = [];
+
+  Future<List<Map<String, dynamic>>> fetchDataFromFirestoreBroker() async {
+    Map<String, num> brokerData = {};
+
+    // Fetch data from 'Collection1' collection
+    QuerySnapshot collection1QuerySnapshot =
+        await FirebaseFirestore.instance.collection('Shop').get();
+
+    // Iterate through documents in 'Collection1' collection
+    for (var doc1 in collection1QuerySnapshot.docs) {
+      List<dynamic> orders = doc1['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        String brokerName =
+            order['brokerName'].toLowerCase(); // Convert to lowercase
+        brokerName = brokerName.substring(0, 1).toUpperCase() +
+            brokerName.substring(1); // Capitalize first letter
+        num brokerHaveTons = num.tryParse(order['brokerHaveTons']) ?? 0;
+        brokerData[brokerName] = (brokerData[brokerName] ?? 0) + brokerHaveTons;
+      }
+    }
+
+    // Fetch data from 'Collection2' collection
+    QuerySnapshot collection2QuerySnapshot =
+        await FirebaseFirestore.instance.collection('Mill').get();
+
+    // Iterate through documents in 'Collection2' collection
+    for (var doc2 in collection2QuerySnapshot.docs) {
+      List<dynamic> orders = doc2['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        String brokerName =
+            order['brokerName'].toLowerCase(); // Convert to lowercase
+        brokerName = brokerName.substring(0, 1).toUpperCase() +
+            brokerName.substring(1); // Capitalize first letter
+        num brokerHaveTons = num.tryParse(order['brokerHaveTons']) ?? 0;
+        brokerData[brokerName] = (brokerData[brokerName] ?? 0) + brokerHaveTons;
+      }
+    }
+
+    // Convert aggregated data into the desired format
+    List<Map<String, dynamic>> result = [];
+    brokerData.forEach((brokerName, totalTons) {
+      result.add({
+        'brokerName': brokerName,
+        'totalTons': totalTons,
+      });
+    });
+
+    return result;
   }
 
   StreamSubscription<QuerySnapshot>? _subscription;
@@ -179,6 +230,17 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _subscribeToOrders();
     _subscribeToOrdersShop();
+    fetchOrdersFromFirestore();
+    fetchDataFromFirestore().then((data) {
+      setState(() {
+        gridData = data;
+      });
+    });
+    fetchDataFromFirestoreBroker().then((data) {
+      setState(() {
+        gridDataBroker = data;
+      });
+    });
   }
 
   @override
@@ -188,20 +250,239 @@ class _HomePageState extends State<HomePage> {
     _subscriptionShop?.cancel();
   }
 
+  int _selectedIndex = 0;
+  static const TextStyle optionStyle =
+      TextStyle(fontSize: 30, fontWeight: FontWeight.bold);
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  List<dynamic> filteredOrders = [];
+
+  Future<List<dynamic>> fetchOrdersFromFirestore() async {
+    // Fetch data from 'Mill' collection
+    QuerySnapshot millQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Mill').get();
+
+    // Iterate through documents in 'Mill' collection
+    for (var doc in millQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['isLoad'] == false) {
+          // Check if 'isLoad' is false
+          filteredOrders.add(order);
+        }
+      }
+    }
+
+    // Fetch data from 'Shop' collection
+    QuerySnapshot shopQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Shop').get();
+
+    // Iterate through documents in 'Shop' collection
+    for (var doc in shopQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['isLoad'] == false) {
+          // Check if 'isLoad' is false
+          filteredOrders.add(order);
+        }
+      }
+    }
+
+    return filteredOrders;
+  }
+
+  Future<void> updateOrderIsLoad(
+      String orderId, sellTo, sellPrice, int total) async {
+    // Fetch data from 'Mill' collection
+    QuerySnapshot millQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Mill').get();
+
+    // Iterate through documents in 'Mill' collection
+    for (var doc in millQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['orderID'] == orderId) {
+          // Check if 'orderID' matches
+          await FirebaseFirestore.instance
+              .collection('Mill')
+              .doc(doc.id)
+              .update({
+            'orders': FieldValue.arrayRemove([order]), // Remove the order
+          });
+          await FirebaseFirestore.instance
+              .collection('Mill')
+              .doc(doc.id)
+              .update({
+            'totalTons': FieldValue.increment(-total),
+            'orders': FieldValue.arrayUnion([
+              {
+                ...order,
+                'isLoad': true,
+                'sellTo': sellTo,
+                'sellPrice': sellPrice,
+                'brokerHaveTons': '0',
+              } // Add the updated order with 'isLoad' set to true
+            ]),
+          });
+        }
+      }
+    }
+
+    // Fetch data from 'Shop' collection
+    QuerySnapshot shopQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Shop').get();
+
+    // Iterate through documents in 'Shop' collection
+    for (var doc in shopQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['orderID'] == orderId) {
+          // Check if 'orderID' matches
+          await FirebaseFirestore.instance
+              .collection('Shop')
+              .doc(doc.id)
+              .update({
+            'orders': FieldValue.arrayRemove([order]), // Remove the order
+          });
+          await FirebaseFirestore.instance
+              .collection('Shop')
+              .doc(doc.id)
+              .update({
+            'totalTons': FieldValue.increment(-total),
+            'orders': FieldValue.arrayUnion([
+              {
+                ...order,
+                'isLoad': true,
+                'sellTo': sellTo,
+                'sellPrice': sellPrice,
+                'brokerHaveTons': '0',
+              } // Add the updated order with 'isLoad' set to true
+            ]),
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> justDelete(String orderId, int total) async {
+    // Fetch data from 'Mill' collection
+    QuerySnapshot millQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Mill').get();
+
+    // Iterate through documents in 'Mill' collection
+    for (var doc in millQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['orderID'] == orderId) {
+          // Check if 'orderID' matches
+          await FirebaseFirestore.instance
+              .collection('Mill')
+              .doc(doc.id)
+              .update({
+            'orders': FieldValue.arrayRemove([order]), // Remove the order
+          });
+          await FirebaseFirestore.instance
+              .collection('Mill')
+              .doc(doc.id)
+              .update({
+            'totalTons': FieldValue.increment(-total),
+          });
+        }
+      }
+    }
+
+    // Fetch data from 'Shop' collection
+    QuerySnapshot shopQuerySnapshot =
+        await FirebaseFirestore.instance.collection('Shop').get();
+
+    // Iterate through documents in 'Shop' collection
+    for (var doc in shopQuerySnapshot.docs) {
+      List<dynamic> orders = doc['orders'];
+      // Iterate through orders array in each document
+      for (var order in orders) {
+        if (order['orderID'] == orderId) {
+          // Check if 'orderID' matches
+          await FirebaseFirestore.instance
+              .collection('Shop')
+              .doc(doc.id)
+              .update({
+            'orders': FieldValue.arrayRemove([order]), // Remove the order
+          });
+
+          await FirebaseFirestore.instance
+              .collection('Shop')
+              .doc(doc.id)
+              .update({
+            'totalTons': FieldValue.increment(-total),
+          });
+        }
+      }
+    }
+  }
+
+  Future<void> getData() async {
+    await fetchDataFromFirestore();
+    await fetchOrdersFromFirestore();
+    await fetchDataFromFirestoreBroker();
+    return await Future.delayed(Duration(seconds: 1));
+  }
+
   @override
   Widget build(BuildContext context) {
+    List<Widget> widgetOptions = [
+      LiquidPullToRefresh(onRefresh: getData, child: homeScreen()),
+      LiquidPullToRefresh(onRefresh: getData, child: LedgerScreen()),
+    ];
+
     return Scaffold(
       floatingActionButton: FloatingActionButton(
           backgroundColor: Colors.amber,
-          onPressed: () {
-            _onAlertButtonsPressed(context);
+          onPressed: () async {
+            // _onAlertButtonsPressed(context);
+            MyAppComponents.goToPage(
+                context: context,
+                navigateTo: Upload(
+                  title: 'Purchasing',
+                  gridData: await fetchDataFromFirestore(),
+                ));
           },
           child: Icon(
             Icons.add,
             color: Colors.white,
             size: 30,
           )),
-      body: SafeArea(
+      body: widgetOptions.elementAt(_selectedIndex),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.account_tree_outlined),
+            label: 'Ledger',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+
+  Widget homeScreen() {
+    return SafeArea(
+      child: SingleChildScrollView(
         child: StreamBuilder(
           stream: FirebaseFirestore.instance.collection('Mill').snapshots(),
           builder: (context, snapshot) {
@@ -210,18 +491,18 @@ class _HomePageState extends State<HomePage> {
                 child: CircularProgressIndicator(),
               );
             } else {
-              List<dynamic> allOrders = [];
-              for (var doc in snapshot.data!.docs) {
-                List<dynamic> orders = doc['orders'];
-                // int totalTons = doc['totalTons'];
-                // totalOrders += totalTons;
-                allOrders.addAll(orders);
-              }
-              allOrders.sort((a, b) {
-                final dateTimeA = DateTime.parse(a['dateTime']);
-                final dateTimeB = DateTime.parse(b['dateTime']);
-                return dateTimeB.compareTo(dateTimeA);
-              });
+              // List<dynamic> allOrders = [];
+              // for (var doc in snapshot.data!.docs) {
+              //   List<dynamic> orders = doc['orders'];
+              //   // int totalTons = doc['totalTons'];
+              //   // totalOrders += totalTons;
+              //   allOrders.addAll(orders);
+              // }
+              // allOrders.sort((a, b) {
+              //   final dateTimeA = DateTime.parse(a['dateTime']);
+              //   final dateTimeB = DateTime.parse(b['dateTime']);
+              //   return dateTimeB.compareTo(dateTimeA);
+              // });
 
               return SingleChildScrollView(
                 child: Column(
@@ -274,97 +555,232 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ],
                     ),
+                    gridData.isEmpty
+                        ? Container()
+                        : Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Divider(
+                              color: Colors.black,
+                            ),
+                          ),
+                    gridData.isEmpty
+                        ? Container()
+                        : const Text(
+                            '-- Available Tons --',
+                            style: TextStyle(fontSize: 20),
+                          ),
                     Padding(
-                      padding: const EdgeInsets.only(left: 20, right: 20),
-                      child: Divider(
-                        color: Colors.black,
+                      padding: const EdgeInsets.only(top: 20),
+                      child: GridView.count(
+                        crossAxisCount: 5,
+                        shrinkWrap: true,
+                        crossAxisSpacing: 10,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: gridData.map((data) {
+                          return Visibility(
+                            visible: data['totalTons'] > 0,
+                            child: Text(
+                              '${data['millType']}\n${data['totalTons']}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                       ),
                     ),
-                    Text(
-                      'Sugar Mill\'s',
-                      style:
-                          TextStyle(fontWeight: FontWeight.bold, fontSize: 25),
+                    gridDataBroker.isEmpty
+                        ? Container()
+                        : Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Divider(
+                              color: Colors.black,
+                            ),
+                          ),
+                    gridDataBroker.isEmpty
+                        ? Container()
+                        : const Text(
+                            '-- Broker\'s --',
+                            style: TextStyle(fontSize: 20),
+                          ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 20),
+                      child: GridView.count(
+                        crossAxisCount: 5,
+                        shrinkWrap: true,
+                        crossAxisSpacing: 10,
+                        physics: NeverScrollableScrollPhysics(),
+                        children: gridDataBroker.map((data) {
+                          return Visibility(
+                            visible: data['totalTons'] > 0,
+                            child: Text(
+                              '${data['brokerName']}\n${data['totalTons']}',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     ),
-                    MyAppDesigns.title('Date', 'Dealer', 'Tons', 'Due Rate',
-                        'Mill', false, context),
+                    filteredOrders.isEmpty
+                        ? Container()
+                        : Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: Divider(
+                              color: Colors.black,
+                            ),
+                          ),
+                    filteredOrders.isEmpty
+                        ? Container()
+                        : const Text(
+                            '-- Pending Ton\'s --',
+                            style: TextStyle(fontSize: 20),
+                          ),
                     ListView.builder(
+                      itemCount: filteredOrders.length,
                       shrinkWrap: true,
                       physics: NeverScrollableScrollPhysics(),
-                      itemCount: allOrders.length,
                       itemBuilder: (context, index) {
-                        return MyAppDesigns.order(
-                            // allOrders[index]['dateTime'],
-                            getFormattedDate(allOrders[index]['dateTime']),
-                            allOrders[index]['dealer_name'],
-                            allOrders[index]['tons'],
-                            allOrders[index]['due_price'],
-                            allOrders[index]['millType'],
-                            allOrders[index]['orderType'] == 'Purchasing'
-                                ? true
-                                : false,
-                            context,
-                            allOrders,
-                            false);
-                      },
-                    ),
-                    const Divider(
-                      color: Colors.black12,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 10),
-                      child: Text(
-                        'Shop\'s',
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold, fontSize: 25),
-                      ),
-                    ),
-                    MyAppDesigns.title('Date', 'Dealer', 'Tons', 'Due Rate',
-                        'Mill', false, context),
-                    StreamBuilder(
-                        stream: FirebaseFirestore.instance
-                            .collection('Shop')
-                            .snapshots(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else {
-                            List<dynamic> allOrdersShop = [];
-                            for (var doc in snapshot.data!.docs) {
-                              List<dynamic> orders = doc['orders'];
-                              allOrdersShop.addAll(orders);
-                            }
-
-                            allOrdersShop.sort((a, b) {
-                              final dateTimeA = DateTime.parse(a['dateTime']);
-                              final dateTimeB = DateTime.parse(b['dateTime']);
-                              return dateTimeB.compareTo(dateTimeA);
-                            });
-
-                            return ListView.builder(
-                              shrinkWrap: true,
-                              physics: NeverScrollableScrollPhysics(),
-                              itemCount: allOrdersShop.length,
-                              itemBuilder: (context, index) {
-                                return MyAppDesigns.order(
-                                    getFormattedDate(
-                                        allOrdersShop[index]['dateTime']),
-                                    allOrdersShop[index]['dealer_name'],
-                                    allOrdersShop[index]['tons'],
-                                    allOrdersShop[index]['due_price'],
-                                    allOrdersShop[index]['millType'],
-                                    allOrdersShop[index]['orderType'] ==
-                                            'Purchasing'
-                                        ? true
-                                        : false,
-                                    context,
-                                    allOrdersShop,
-                                    true);
+                        Map<String, dynamic> order = filteredOrders[index];
+                        return InkWell(
+                          onLongPress: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                return AlertDialog(
+                                  title: Text('Want to delete this order ?'),
+                                  actions: [
+                                    TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: Text('No')),
+                                    TextButton(
+                                        onPressed: () {
+                                          int currentTons =
+                                              int.parse(order['tons']);
+                                          justDelete(
+                                                  order['orderID'], currentTons)
+                                              .whenComplete(
+                                                  () => Navigator.pop(context));
+                                        },
+                                        child: Text('Yes'))
+                                  ],
+                                );
                               },
                             );
-                          }
-                        }),
+                          },
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (context) {
+                                TextEditingController customerName =
+                                    TextEditingController();
+                                TextEditingController tonPrice =
+                                    TextEditingController();
+                                String newDealerName = '';
+                                String duePrice = '';
+
+                                return AlertDialog(
+                                  title: Text(
+                                      'Loading ${order['brokerName']} to ?'),
+                                  content: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      TextField(
+                                        controller: customerName,
+                                        decoration: InputDecoration(
+                                            labelText: 'Customer Name'),
+                                        onChanged: (value) {
+                                          newDealerName = value;
+                                        },
+                                      ),
+                                      TextField(
+                                        controller: tonPrice,
+                                        keyboardType: TextInputType.number,
+                                        inputFormatters: <TextInputFormatter>[
+                                          FilteringTextInputFormatter.allow(
+                                              RegExp(r'[0-9]')),
+                                        ],
+                                        decoration: InputDecoration(
+                                            labelText: 'Due Price'),
+                                        onChanged: (value) {
+                                          duePrice = value;
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                  actions: <Widget>[
+                                    TextButton(
+                                      onPressed: () {
+                                        // Close the dialog
+                                        Navigator.of(context).pop();
+                                      },
+                                      child: Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        if (customerName.text.isNotEmpty &&
+                                            tonPrice.text.isNotEmpty) {
+                                          int currentTons =
+                                              int.parse(order['tons']);
+
+                                          updateOrderIsLoad(
+                                                  order['orderID'],
+                                                  customerName.text,
+                                                  tonPrice.text,
+                                                  currentTons)
+                                              .whenComplete(
+                                                  () => Navigator.pop(context));
+                                        } else {
+                                          CustomSnackBar(
+                                              context,
+                                              Text(
+                                                  'Please Put the Name and Price...'));
+                                        }
+                                      },
+                                      child: Text('Load'),
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 10),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                              children: [
+                                SizedBox(
+                                  width: 40,
+                                  child: Text(MyAppComponents.getFormattedDate(
+                                      order['dateTime'])),
+                                ),
+                                SizedBox(
+                                    width: 120,
+                                    child: Text(order['brokerName'])),
+                                SizedBox(
+                                    width: 60, child: Text(order['millType'])),
+                                SizedBox(
+                                    width: 60,
+                                    child: Text(
+                                        '${order['brokerHaveTons']} Tons')),
+                                SizedBox(
+                                  width: 20,
+                                  child: Icon(
+                                    Icons.fire_truck_rounded,
+                                    color: Colors.red,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
                   ],
                 ),
               );

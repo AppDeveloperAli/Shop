@@ -84,9 +84,16 @@ class _PurchaseScreenState extends State<Upload> {
                     ),
                     Padding(
                       padding: const EdgeInsets.only(top: 10),
+                      child: Text(
+                        '-- ${widget.title} From --',
+                        style: const TextStyle(fontSize: 20),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 10),
                       child: MyTextInputText(
                         controller: customerController,
-                        labelText: 'Dealer Name',
+                        labelText: 'Broker Name',
                       ),
                     ),
                     Padding(
@@ -114,6 +121,10 @@ class _PurchaseScreenState extends State<Upload> {
                           ),
                         ],
                       ),
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 10),
+                      child: Divider(),
                     ),
                     const Padding(
                       padding: EdgeInsets.only(top: 20),
@@ -294,7 +305,7 @@ class _PurchaseScreenState extends State<Upload> {
               ),
             ),
             isLoading
-                ? const CircularProgressIndicator()
+                ? Container()
                 : Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
@@ -355,24 +366,27 @@ class _PurchaseScreenState extends State<Upload> {
                                 isLoading = false;
                               });
                             },
-                            child: Card(
-                              color: Colors.blue,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20.0),
-                              ),
-                              elevation: 5,
-                              margin: const EdgeInsets.all(10),
-                              child: const Padding(
-                                padding: EdgeInsets.all(10),
-                                child: Center(
-                                  child: Text(
-                                    'Place an Order',
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 20),
+                            child: isLoading
+                                ? Container()
+                                : Card(
+                                    color: Colors.blue,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20.0),
+                                    ),
+                                    elevation: 5,
+                                    margin: const EdgeInsets.all(10),
+                                    child: const Padding(
+                                      padding: EdgeInsets.all(10),
+                                      child: Center(
+                                        child: Text(
+                                          'Place an Order',
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 20),
+                                        ),
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                            ),
                           ),
                         ),
                       ],
