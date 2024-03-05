@@ -570,7 +570,8 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(fontSize: 20),
                           ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20),
+                      padding:
+                          const EdgeInsets.only(top: 20, left: 10, right: 10),
                       child: GridView.count(
                         crossAxisCount: 5,
                         shrinkWrap: true,
@@ -605,7 +606,8 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(fontSize: 20),
                           ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 20),
+                      padding:
+                          const EdgeInsets.only(top: 20, left: 10, right: 10),
                       child: GridView.count(
                         crossAxisCount: 5,
                         shrinkWrap: true,
@@ -639,147 +641,153 @@ class _HomePageState extends State<HomePage> {
                             '-- Pending Ton\'s --',
                             style: TextStyle(fontSize: 20),
                           ),
-                    ListView.builder(
-                      itemCount: filteredOrders.length,
-                      shrinkWrap: true,
-                      physics: NeverScrollableScrollPhysics(),
-                      itemBuilder: (context, index) {
-                        Map<String, dynamic> order = filteredOrders[index];
-                        return InkWell(
-                          onLongPress: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: Text('Want to delete this order ?'),
-                                  actions: [
-                                    TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: Text('No')),
-                                    TextButton(
-                                        onPressed: () {
-                                          int currentTons =
-                                              int.parse(order['tons']);
-                                          justDelete(
-                                                  order['orderID'], currentTons)
-                                              .whenComplete(
-                                                  () => Navigator.pop(context));
-                                        },
-                                        child: Text('Yes'))
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          onTap: () {
-                            showDialog(
-                              context: context,
-                              builder: (context) {
-                                TextEditingController customerName =
-                                    TextEditingController();
-                                TextEditingController tonPrice =
-                                    TextEditingController();
-                                String newDealerName = '';
-                                String duePrice = '';
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: ListView.builder(
+                        itemCount: filteredOrders.length,
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          Map<String, dynamic> order = filteredOrders[index];
+                          return InkWell(
+                            onLongPress: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    title: Text('Want to delete this order ?'),
+                                    actions: [
+                                      TextButton(
+                                          onPressed: () {
+                                            Navigator.pop(context);
+                                          },
+                                          child: Text('No')),
+                                      TextButton(
+                                          onPressed: () {
+                                            int currentTons =
+                                                int.parse(order['tons']);
+                                            justDelete(order['orderID'],
+                                                    currentTons)
+                                                .whenComplete(() =>
+                                                    Navigator.pop(context));
+                                          },
+                                          child: Text('Yes'))
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            onTap: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  TextEditingController customerName =
+                                      TextEditingController();
+                                  TextEditingController tonPrice =
+                                      TextEditingController();
+                                  String newDealerName = '';
+                                  String duePrice = '';
 
-                                return AlertDialog(
-                                  title: Text(
-                                      'Loading ${order['brokerName']} to ?'),
-                                  content: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      TextField(
-                                        controller: customerName,
-                                        decoration: InputDecoration(
-                                            labelText: 'Customer Name'),
-                                        onChanged: (value) {
-                                          newDealerName = value;
+                                  return AlertDialog(
+                                    title: Text(
+                                        'Loading ${order['brokerName']} to ?'),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        TextField(
+                                          controller: customerName,
+                                          decoration: InputDecoration(
+                                              labelText: 'Customer Name'),
+                                          onChanged: (value) {
+                                            newDealerName = value;
+                                          },
+                                        ),
+                                        TextField(
+                                          controller: tonPrice,
+                                          keyboardType: TextInputType.number,
+                                          inputFormatters: <TextInputFormatter>[
+                                            FilteringTextInputFormatter.allow(
+                                                RegExp(r'[0-9]')),
+                                          ],
+                                          decoration: InputDecoration(
+                                              labelText: 'Due Price'),
+                                          onChanged: (value) {
+                                            duePrice = value;
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    actions: <Widget>[
+                                      TextButton(
+                                        onPressed: () {
+                                          // Close the dialog
+                                          Navigator.of(context).pop();
                                         },
+                                        child: Text('Cancel'),
                                       ),
-                                      TextField(
-                                        controller: tonPrice,
-                                        keyboardType: TextInputType.number,
-                                        inputFormatters: <TextInputFormatter>[
-                                          FilteringTextInputFormatter.allow(
-                                              RegExp(r'[0-9]')),
-                                        ],
-                                        decoration: InputDecoration(
-                                            labelText: 'Due Price'),
-                                        onChanged: (value) {
-                                          duePrice = value;
+                                      TextButton(
+                                        onPressed: () {
+                                          if (customerName.text.isNotEmpty &&
+                                              tonPrice.text.isNotEmpty) {
+                                            int currentTons =
+                                                int.parse(order['tons']);
+
+                                            updateOrderIsLoad(
+                                                    order['orderID'],
+                                                    customerName.text,
+                                                    tonPrice.text,
+                                                    currentTons)
+                                                .whenComplete(() =>
+                                                    Navigator.pop(context));
+                                          } else {
+                                            CustomSnackBar(
+                                                context,
+                                                Text(
+                                                    'Please Put the Name and Price...'));
+                                          }
                                         },
+                                        child: Text('Load'),
                                       ),
                                     ],
-                                  ),
-                                  actions: <Widget>[
-                                    TextButton(
-                                      onPressed: () {
-                                        // Close the dialog
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Cancel'),
-                                    ),
-                                    TextButton(
-                                      onPressed: () {
-                                        if (customerName.text.isNotEmpty &&
-                                            tonPrice.text.isNotEmpty) {
-                                          int currentTons =
-                                              int.parse(order['tons']);
-
-                                          updateOrderIsLoad(
-                                                  order['orderID'],
-                                                  customerName.text,
-                                                  tonPrice.text,
-                                                  currentTons)
-                                              .whenComplete(
-                                                  () => Navigator.pop(context));
-                                        } else {
-                                          CustomSnackBar(
-                                              context,
-                                              Text(
-                                                  'Please Put the Name and Price...'));
-                                        }
-                                      },
-                                      child: Text('Load'),
-                                    ),
-                                  ],
-                                );
-                              },
-                            );
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 10),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                SizedBox(
-                                  width: 40,
-                                  child: Text(MyAppComponents.getFormattedDate(
-                                      order['dateTime'])),
-                                ),
-                                SizedBox(
-                                    width: 120,
-                                    child: Text(order['brokerName'])),
-                                SizedBox(
-                                    width: 60, child: Text(order['millType'])),
-                                SizedBox(
-                                    width: 60,
+                                  );
+                                },
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 10),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  SizedBox(
+                                    width: 40,
                                     child: Text(
-                                        '${order['brokerHaveTons']} Tons')),
-                                SizedBox(
-                                  width: 20,
-                                  child: Icon(
-                                    Icons.fire_truck_rounded,
-                                    color: Colors.red,
+                                        MyAppComponents.getFormattedDate(
+                                            order['dateTime'])),
                                   ),
-                                )
-                              ],
+                                  SizedBox(
+                                      width: 120,
+                                      child: Text(order['brokerName'])),
+                                  SizedBox(
+                                      width: 60,
+                                      child: Text(order['millType'])),
+                                  SizedBox(
+                                      width: 60,
+                                      child: Text(
+                                          '${order['brokerHaveTons']} Tons')),
+                                  SizedBox(
+                                    width: 20,
+                                    child: Icon(
+                                      Icons.fire_truck_rounded,
+                                      color: Colors.red,
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      },
+                          );
+                        },
+                      ),
                     )
                   ],
                 ),

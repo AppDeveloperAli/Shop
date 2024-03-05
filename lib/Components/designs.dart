@@ -439,77 +439,93 @@ class MyAppDesigns {
     );
   }
 
-  static ledgerTitle(String date, dealer, mill, tons, duerate, bool isSold,
-      BuildContext context) {
+  static ledgerTitle(String date, dealer, mill, tons, duerate, buyfrom,
+      tonsfrom, bool isSold, BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        width: double.infinity,
-        child: Column(
-          children: [
-            const Divider(
-              color: Colors.black12,
+      padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.05),
+      width: double.infinity,
+      child: Column(
+        children: [
+          const Divider(
+            color: Colors.black12,
+          ),
+          InkWell(
+            onLongPress: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: Text('Order Details'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text('Buy from : $buyfrom'),
+                        Text('Due Rate : $tonsfrom'),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SizedBox(
+                  width: screenWidth * 0.1,
+                  child: Text(date,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: isSold ? Colors.blue : Colors.red)),
+                ),
+                const Text(' : '),
+                SizedBox(
+                  width: screenWidth * 0.3,
+                  child: Text(dealer,
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          // fontSize: 18,
+                          color: isSold ? Colors.blue : Colors.red)),
+                ),
+                const Text(' : '),
+                SizedBox(
+                  width: screenWidth * 0.15,
+                  child: Text(mill,
+                      style: TextStyle(
+                          // fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isSold ? Colors.blue : Colors.red)),
+                ),
+                const Text(' : '),
+                SizedBox(
+                  width: screenWidth * 0.05,
+                  child: Text(tons,
+                      style: TextStyle(
+                          // fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isSold ? Colors.blue : Colors.red)),
+                ),
+                const Text(' : '),
+                SizedBox(
+                  width: screenWidth * 0.1,
+                  child: Text(duerate,
+                      style: TextStyle(
+                          // fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isSold ? Colors.blue : Colors.red)),
+                ),
+                const Text(' : '),
+                Icon(
+                  isSold ? Icons.check : Icons.close,
+                  color: isSold ? Colors.blue : Colors.red,
+                )
+              ],
             ),
-            InkWell(
-              onTap: () {
-                MyAppComponents.goToPage(
-                    context: context, navigateTo: LeaderDetails());
-              },
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  SizedBox(
-                    width: 40,
-                    child: Text(date,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: isSold ? Colors.blue : Colors.red)),
-                  ),
-                  const Text(' : '),
-                  SizedBox(
-                    width: 130,
-                    child: Text(dealer,
-                        style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            // fontSize: 18,
-                            color: isSold ? Colors.blue : Colors.red)),
-                  ),
-                  const Text(' : '),
-                  SizedBox(
-                    width: 60,
-                    child: Text(mill,
-                        style: TextStyle(
-                            // fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isSold ? Colors.blue : Colors.red)),
-                  ),
-                  const Text(' : '),
-                  SizedBox(
-                    width: 20,
-                    child: Text(tons,
-                        style: TextStyle(
-                            // fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isSold ? Colors.blue : Colors.red)),
-                  ),
-                  const Text(' : '),
-                  SizedBox(
-                    width: 40,
-                    child: Text(duerate,
-                        style: TextStyle(
-                            // fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: isSold ? Colors.blue : Colors.red)),
-                  ),
-                  const Text(' : '),
-                  Icon(
-                    isSold ? Icons.check : Icons.close,
-                    color: isSold ? Colors.blue : Colors.red,
-                  )
-                ],
-              ),
-            ),
-          ],
-        ));
+          ),
+        ],
+      ),
+    );
   }
 
   static ledgerOrder(

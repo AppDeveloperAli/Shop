@@ -88,17 +88,20 @@ class _LedgerScreenState extends State<LedgerScreen> {
                       itemBuilder: (context, index) {
                         Map<String, dynamic> order = allOrders[index];
                         return MyAppDesigns.ledgerTitle(
-                            MyAppComponents.getFormattedDate(order['dateTime']),
-                            order['isLoad']
-                                ? order['sellTo']
-                                : order['brokerName'],
-                            order['millType'],
-                            order['tons'],
-                            order['isLoad']
-                                ? order['sellPrice']
-                                : order['due_price'],
-                            order['isLoad'],
-                            context);
+                          MyAppComponents.getFormattedDate(order['dateTime']),
+                          order['isLoad']
+                              ? order['sellTo']
+                              : order['brokerName'],
+                          order['millType'],
+                          order['tons'],
+                          order['isLoad']
+                              ? order['sellPrice']
+                              : order['due_price'],
+                          order['brokerName'],
+                          order['due_price'],
+                          order['isLoad'],
+                          context,
+                        );
                         // return ListTile(
                         //   title: Text(order['brokerName']),
                         //   subtitle:
